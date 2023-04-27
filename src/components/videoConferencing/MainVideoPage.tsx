@@ -24,6 +24,7 @@ function MainVideoPage() {
     });
     if (videoStream && videoRef.current) {
       // set this video stream to our video stream object.
+      console.log(videoStream)
       videoRef.current.srcObject = videoStream
       setIsStreamStarted(true);
     }
