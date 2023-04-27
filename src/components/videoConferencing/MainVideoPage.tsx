@@ -29,7 +29,7 @@ function MainVideoPage() {
     }
   }, []);
 
-  const handleStopStream = useCallback(async (ignoreState = false) => {
+  const handleStopStream = useCallback(async (shouldIgnoreState = false) => {
     const stream = videoRef.current?.srcObject;
     if (stream) {
       if ("getTracks" in stream) {
@@ -38,7 +38,7 @@ function MainVideoPage() {
           tracks[i].stop();
         }
         videoRef.current.srcObject = null;
-        if (!ignoreState) {
+        if (!shouldIgnoreState) {
           setIsStreamStarted(false);
         }
       }
@@ -74,7 +74,7 @@ function MainVideoPage() {
             gap={".5rem"}
             top={"20px"} right={"20px"} direction={"column"} justifyContent={"center"} alignItems={"center"}>
         <ButtonIcon icon={MdOutlineCameraswitch} onClick={handleCameraSwitch}/>
-        <ButtonIcon icon={BsStopFill} onClick={handleStopStream}/>
+        <ButtonIcon icon={BsStopFill} onClick={() => handleStopStream()}/>
       </Flex>
 
       {!isStreamStarted &&
