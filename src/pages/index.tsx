@@ -1,5 +1,6 @@
 import Head from 'next/head'
-import MainVideoPage from "@/components/videoConferencing/MainVideoPage";
+import VideoPageBroadcaster from "@/components/videoConferencing/VideoPageBroadcaster";
+import VideoStreamSetup from "@/components/videoStreaming/VideoStreamSetup";
 
 export default function Home() {
   return (
@@ -10,7 +11,8 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <link rel="icon" href="/favicon.ico"/>
       </Head>
-      <MainVideoPage/>
+      <VideoStreamSetup/>
+      <VideoPageBroadcaster/>
     </>
   )
 }
