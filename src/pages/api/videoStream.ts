@@ -1,13 +1,13 @@
 import {NextApiRequest, NextApiResponse} from "next";
 import {Server} from "socket.io";
-import {videoStreamingSocketEndpoint} from "@/values/globals";
+import {videoStreamingEndpoint} from "@/values/globals";
 
 interface RequestData {
   // Blank for now.
 }
 
 const io = new Server({
-  path: videoStreamingSocketEndpoint,
+  path: videoStreamingEndpoint,
   serveClient: false,
 });
 
