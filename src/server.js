@@ -1,19 +1,17 @@
-// server.js
-
-import {NextServer} from "next/dist/server/next";
-import {Server} from "socket.io";
-import {IncomingMessage, ServerResponse} from "http";
-import {env, serverHostName, serverPort} from "@/values/globals";
-
 const {createServer} = require('http')
+const {Server} = require("socket.io")
 const next = require('next')
 
+const env = process.env.NODE_ENV || "development"
+const serverPort = 3001
+const serverHostName = env === "development" ? "localhost" : "localhost"
+
 // when using middleware `hostname` and `port` must be provided below
-const app: NextServer = next({dev: env, hostname: serverHostName, port: serverPort})
+const app = next({dev: env === "development", hostname: serverHostName, port: serverPort})
 const handle = app.getRequestHandler()
 
 app.prepare().then(async () => {
-  const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+  const server = createServer(async (req, res) => {
     try {
       await handle(req, res)
     } catch (err) {
@@ -21,14 +19,14 @@ app.prepare().then(async () => {
       res.statusCode = 500
       res.end('internal server error')
     }
+  });
+  server.once('error', (err) => {
+    console.error(err)
+    process.exit(1)
   })
-    .once('error', (err: Error) => {
-      console.error(err)
-      process.exit(1)
-    })
 
   const io = new Server(server);
-  io.on("connection", socket => {
+  io.on("connection", (socket) => {
     console.log("New connection with: ", socket);
   })
 
