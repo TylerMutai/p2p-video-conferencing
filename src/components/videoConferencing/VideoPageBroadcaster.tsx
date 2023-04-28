@@ -1,16 +1,9 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Inter} from "next/font/google";
-import {Box, Button, chakra, Flex, Text} from "@chakra-ui/react";
+import {Button, chakra, Flex, Text} from "@chakra-ui/react";
 import ButtonIcon from "@/components/videoConferencing/ButtonIcon";
 import {MdOutlineCameraswitch} from "react-icons/md";
 import {BsStopFill} from "react-icons/bs";
 import FacingModeTypes from "@/types/facingModes";
-import {io} from "socket.io-client";
-import {DefaultEventsMap} from "@socket.io/component-emitter";
-import {Socket} from "socket.io";
-
-
-const inter = Inter({subsets: ['latin']})
 
 const config = {
   iceServers: [
@@ -27,11 +20,6 @@ function VideoPageBroadcaster() {
   const [errorMessage, setErrorMessage] = useState("")
   const facingMode = useRef<FacingModeTypes>("user");
   const videoRef = useRef<HTMLVideoElement>(null);
-  const socket = useRef<Socket<DefaultEventsMap, ListenEvents>>();
-  const peerConnections = useRef<{ [key: string]: RTCPeerConnection }>({});
-  useEffect(() => {
-    socket.current = io();
-  }, [])
 
   const getWebcamStream = useCallback(async () => {
     // We'll use this to obtain the camera feed.
@@ -45,48 +33,6 @@ function VideoPageBroadcaster() {
         // set this video stream to our video stream object.
         videoRef.current.srcObject = videoStream
         setIsStreamStarted(true);
-
-        // broadcast this stream.
-        socket.emit("broadcaster");
-
-        // add listeners to our socket.io object
-        socket.on("watcher", async id => {
-          const peerConnection = new RTCPeerConnection(config);
-          peerConnections.current[id] = peerConnection;
-
-          if (videoRef.current?.srcObject) {
-            let stream = videoRef.current.srcObject;
-            if ("getTracks" in stream) {
-              stream.getTracks().forEach(track => peerConnection.addTrack(track, stream as MediaStream));
-              peerConnection.onicecandidate = event => {
-                if (event.candidate) {
-                  socket.emit("candidate", id, event.candidate);
-                }
-              };
-            }
-
-            try {
-              const sdp = await peerConnection.createOffer()
-              await peerConnection.setLocalDescription(sdp)
-              socket.emit("offer", id, peerConnection.localDescription);
-            } catch (e) {
-
-            }
-          }
-        });
-
-        socket.on("answer", (id, description) => {
-          peerConnections.current[id].setRemoteDescription(description);
-        });
-
-        socket.on("candidate", (id, candidate) => {
-          peerConnections.current[id].addIceCandidate(new RTCIceCandidate(candidate));
-        });
-
-        socket.on("disconnectPeer", id => {
-          peerConnections.current[id].close();
-          delete peerConnections.current[id];
-        });
       }
     } catch (e: any) {
       setErrorMessage(e?.message || "Could not start video stream. Have you enabled connection?")
@@ -125,17 +71,10 @@ function VideoPageBroadcaster() {
 
   useEffect(() => {
     getWebcamStream().then();
-
-    return () => {
-      // close connection if component unmounts.
-      socket.close();
-    }
   }, [getWebcamStream])
 
   return (
-    <Box className={inter.className}
-         position={"relative"}
-         bg={"black"} w={"100vw"} h={"100vh"}>
+    <>
       <chakra.video
         transform={"scaleX(-1)" /*For purposes of ensuring the incoming livestream behaves like a mirror (flipped)*/}
         width={"100%"} height={"100%"} objectFit={"contain"} ref={videoRef} autoPlay={true}>
@@ -162,7 +101,7 @@ function VideoPageBroadcaster() {
             Start Stream
           </Button>
         </Flex>}
-    </Box>
+    </>
   );
 }
 

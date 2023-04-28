@@ -3,7 +3,7 @@ const {Server} = require("socket.io")
 const next = require('next')
 
 const env = process.env.NODE_ENV || "development"
-const serverPort = 3001
+const serverPort = 3000
 const serverHostName = env === "development" ? "localhost" : "localhost"
 
 // when using middleware `hostname` and `port` must be provided below
@@ -27,7 +27,7 @@ app.prepare().then(async () => {
 
   const io = new Server(server);
   io.on("connection", (socket) => {
-    console.log("New connection with: ", socket);
+    console.log("New connection with: ", socket.id);
   })
 
   server.listen(serverPort, () => {

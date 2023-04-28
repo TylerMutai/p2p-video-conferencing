@@ -5,7 +5,7 @@ import {io} from "socket.io-client";
 
 const inter = Inter({subsets: ['latin']})
 
-function MainVideoPageBroadcaster() {
+function VideoPageClient() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const socket = useRef(io())
 
@@ -27,4 +27,4 @@ function MainVideoPageBroadcaster() {
   );
 }
 
-export default MainVideoPageBroadcaster;
+export default VideoPageClient;
