@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Button, chakra, Flex, Text} from "@chakra-ui/react";
-import ButtonIcon from "@/components/videoConferencing/ButtonIcon";
+import ButtonIcon from "@/components/pages/videoConferencing/ButtonIcon";
 import {MdOutlineCameraswitch} from "react-icons/md";
 import {BsStopFill} from "react-icons/bs";
 import FacingModeTypes from "@/types/facingModes";

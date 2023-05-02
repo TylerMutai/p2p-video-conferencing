@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import MainVideoConferencing from "@/components/videoConferencing/MainVideoConferencing";
+import MainVideoConferencing from "@/components/pages/videoConferencing/MainVideoConferencing";
 
 export default function Home() {
   return (

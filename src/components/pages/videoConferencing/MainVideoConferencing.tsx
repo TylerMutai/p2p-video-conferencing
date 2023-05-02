@@ -1,8 +1,8 @@
 import React from 'react';
 import {Box} from "@chakra-ui/react";
 import {Inter} from "next/font/google";
-import VideoPageBroadcaster from "@/components/videoConferencing/VideoPageBroadcaster";
-import VideoPageClient from "@/components/videoConferencing/VideoPageClient";
+import VideoPageBroadcaster from "@/components/pages/videoConferencing/VideoPageBroadcaster";
+import VideoPageClient from "@/components/pages/videoConferencing/VideoPageClient";
 
 
 const inter = Inter({subsets: ['latin']})
