@@ -17,6 +17,7 @@ function ButtonIcon({icon, onClick}: Props) {
          cursor={"pointer"}
          onClick={onClick}
          _hover={{bg: "lightgray"}}
+         textColor={"black"}
          bg={"white"} borderRadius={"100%"} shadow={"sm"}>
       <Icon as={icon} fontSize={"1.5rem"}/>
     </Box>
