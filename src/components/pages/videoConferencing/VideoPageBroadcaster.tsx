@@ -94,7 +94,8 @@ function VideoPageBroadcaster() {
               h={"100%"} alignItems={"center"} flexDirection={"column"}
               gap={".5rem"}
               justifyContent={"center"}>
-          <Text bg={"white"} p={"10px"}>
+          <Text
+            bg={"white"} p={"10px"}>
             {errorMessage}
           </Text>
           <Button size={"sm"} variant={"solid"} onClick={getWebcamStream}>

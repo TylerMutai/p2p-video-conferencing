@@ -7,6 +7,7 @@ import VideoPageClient from "@/components/pages/videoConferencing/VideoPageClien
 function MainVideoConferencing() {
   return (
     <Box position={"relative"}
+         textColor={"black"}
          bg={"black"} w={"100%"} h={"100%"}>
       <VideoPageBroadcaster/>
       <VideoPageClient/>
