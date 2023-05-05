@@ -15,7 +15,7 @@ function AvailableClients() {
       setLoading(false)
     }
 
-    // fetchClients().then()
+    fetchClients().then()
   }, [])
   return (
     <Flex flexDirection={"column"} alignItems={"center"} justifyContent={"center"}
