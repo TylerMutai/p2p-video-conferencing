@@ -1,9 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Flex, Heading, Spinner, Text} from "@chakra-ui/react";
 
-function AvailableClients() {
+interface Props {
+  handleCandidateSelect: (candidate: RTCSessionDescriptionInit) => void
+}
+
+function AvailableClients({handleCandidateSelect}: Props) {
   const [loading, setLoading] = useState(false)
-  const [clients, setClients] = useState<string[]>(["testing1", "testing2", "testing3"]);
+  const [clients, setClients] = useState<string[]>([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   useEffect(() => {
     const fetchClients = async () => {
       setLoading(true)
@@ -32,6 +38,8 @@ function AvailableClients() {
           client => (
             <Flex key={client} justifyContent={"center"}
                   p={"1rem"}
+                  onClick={() => {
+                  }}
                   borderRadius={"10px"}
                   cursor={"pointer"}
                   _hover={{backgroundColor: "gray"}}

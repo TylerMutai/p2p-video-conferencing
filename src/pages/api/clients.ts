@@ -17,8 +17,7 @@ export default async function handler(
     let statusCode = 500;
     let results: Array<string> = []
     try {
-      connectedClients = await connectedClientsHelper.getConnectedClients();
-      results = Array.from(connectedClients.values())
+      results = await connectedClientsHelper.getConnectedClients();
     } catch (e) {
       message = (e as any).message
     }

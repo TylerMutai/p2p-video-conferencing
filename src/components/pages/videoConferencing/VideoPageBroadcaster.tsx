@@ -5,17 +5,12 @@ import {MdOutlineCameraswitch} from "react-icons/md";
 import {BsStopFill} from "react-icons/bs";
 import FacingModeTypes from "@/types/facingModes";
 
-const config = {
-  iceServers: [
-    {
-      // Google's default STUN servers. Used to relay info about clients behind NATs.
-      urls: ["stun:stun.l.google.com:19302"]
-    }
-  ]
-};
 
+interface Props {
+  pc: RTCPeerConnection,
+}
 
-function VideoPageBroadcaster() {
+function VideoPageBroadcaster({pc}: Props) {
   const [isStreamStarted, setIsStreamStarted] = useState(true);
   const [errorMessage, setErrorMessage] = useState("")
   const facingMode = useRef<FacingModeTypes>("user");
@@ -32,13 +27,14 @@ function VideoPageBroadcaster() {
       if (videoStream && videoRef.current) {
         // set this video stream to our video stream object.
         videoRef.current.srcObject = videoStream
+        videoStream.getTracks().forEach(track => pc.addTrack(track, videoStream));
         setIsStreamStarted(true);
       }
     } catch (e: any) {
-      setErrorMessage(e?.message || "Could not start video stream. Have you enabled connection?")
+      setErrorMessage(e?.message || "Could not start video stream. Have you enabled permissions?")
       setIsStreamStarted(false);
     }
-  }, []);
+  }, [pc]);
 
   const handleStopStream = useCallback(async (shouldIgnoreState = false) => {
     const stream = videoRef.current?.srcObject;

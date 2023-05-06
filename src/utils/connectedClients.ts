@@ -4,11 +4,11 @@ const filename = "connected_clients.txt"
 
 
 const getConnectedClients = async () => {
-  let connectedClients = new Set();
+  let connectedClients = new Map();
   try {
     const fileContents = await fs.readFile(filename)
     const clients = JSON.parse(fileContents.toString() ?? "{}")
-    connectedClients = new Set(Array.from(clients))
+    connectedClients = new Map(clients)
   } catch (e) {
     console.log(e);
   }
@@ -16,11 +16,11 @@ const getConnectedClients = async () => {
   return connectedClients
 }
 
-const addConnectedClient = async (client) => {
+const addConnectedClient = async (client, iceCandidate) => {
   const connectedClients = await getConnectedClients();
   try {
-    connectedClients.add(client);
-    const jsonData = JSON.stringify(Array.from(connectedClients.values()));
+    connectedClients.set(client, iceCandidate);
+    const jsonData = JSON.stringify(connectedClients.entries());
     await fs.writeFile(filename, jsonData)
   } catch (e) {
     console.log(e)
@@ -31,8 +31,7 @@ const deleteConnectedClient = async (client) => {
   const connectedClients = await getConnectedClients();
   try {
     connectedClients.delete(client);
-    const jsonData = JSON.stringify(connectedClients);
-    console.log(jsonData)
+    const jsonData = JSON.stringify(connectedClients.entries());
     await fs.writeFile(filename, jsonData)
   } catch (e) {
     console.log(e)
