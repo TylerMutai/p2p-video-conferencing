@@ -1,8 +1,8 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {SetStateAction, useEffect, useRef, useState} from 'react';
 import {Flex, Heading, Spinner, Text} from "@chakra-ui/react";
 
 interface Props {
-  handleCandidateSelect: (candidate: RTCSessionDescriptionInit) => void
+  handleCandidateSelect: React.Dispatch<SetStateAction<RTCIceCandidate | undefined>>
 }
 
 function AvailableClients({handleCandidateSelect}: Props) {

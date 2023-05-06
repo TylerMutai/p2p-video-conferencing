@@ -1,19 +1,23 @@
 import React, {useEffect, useRef} from 'react';
 import {Inter} from "next/font/google";
 import {Box, chakra} from "@chakra-ui/react";
-import {io} from "socket.io-client";
 
 const inter = Inter({subsets: ['latin']})
 
-function VideoPageClient() {
+interface Props {
+  pc: RTCPeerConnection,
+}
+
+function VideoPageClient({pc}: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const socket = useRef(io())
 
   useEffect(() => {
-    socket.current.on("connect", () => {
-      console.log("Connected!!", socket.current.id);
-    })
-  }, [])
+    pc.ontrack = (event) => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = event.streams[0];
+      }
+    };
+  }, [pc])
 
   return (
     <Box className={inter.className}

@@ -71,14 +71,14 @@ function MainContainer() {
           bg={"black"} w={"100vw"} h={"100vh"}>
       <SimpleGrid columns={{base: 1, md: 2}}>
         <GridItem>
-          <AvailableClients/>
+          <AvailableClients handleCandidateSelect={setSelectedCandidate}/>
         </GridItem>
         <GridItem>
           <Box position={"relative"}
                textColor={"black"}
                bg={"black"} w={"100%"} h={"100%"}>
-            <VideoPageBroadcaster/>
-            <VideoPageClient/>
+            <VideoPageBroadcaster pc={pc.current}/>
+            <VideoPageClient pc={pc.current}/>
           </Box>
         </GridItem>
       </SimpleGrid>
