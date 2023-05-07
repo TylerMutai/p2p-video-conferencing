@@ -79,14 +79,17 @@ function VideoPageBroadcaster({pc}: Props) {
         width={"100%"} height={"100%"} objectFit={"contain"} ref={videoRef} autoPlay={true}>
       </chakra.video>
 
-      <Flex position={"absolute"}
-            gap={".5rem"}
-            top={"20px"} right={"20px"} direction={"column"} justifyContent={"center"} alignItems={"center"}>
-        <ButtonIcon icon={MdOutlineCameraswitch} onClick={handleCameraSwitch}/>
-        <ButtonIcon icon={BsStopFill} onClick={() => handleStopStream()}/>
-      </Flex>
+      {isStreamStarted &&
+        <Flex position={"absolute"}
+              gap={".5rem"}
+              top={"20px"} right={"20px"} direction={"column"} justifyContent={"center"}
+              alignItems={"center"}>
+          <ButtonIcon icon={MdOutlineCameraswitch} onClick={handleCameraSwitch}/>
+          <ButtonIcon icon={BsStopFill} onClick={() => handleStopStream()}/>
+        </Flex>
+      }
 
-      <VideoPageClient pc={pc}/>
+      {isStreamStarted && <VideoPageClient pc={pc}/>}
 
       {!isStreamStarted &&
         <Flex position={"absolute"} w={"100%"}
