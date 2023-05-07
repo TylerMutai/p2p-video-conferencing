@@ -1,3 +1,6 @@
+import {IncomingMessage, ServerResponse} from "http";
+import {ReservedOrUserListener} from "socket.io/dist/typed-events";
+
 const {createServer} = require('http')
 const {Server} = require("socket.io")
 const next = require('next')
@@ -12,7 +15,7 @@ const app = next({dev: env === "development", hostname: serverHostName, port: se
 const handle = app.getRequestHandler()
 
 app.prepare().then(async () => {
-  const server = createServer(async (req, res) => {
+  const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     try {
       await handle(req, res)
     } catch (err) {
@@ -21,13 +24,13 @@ app.prepare().then(async () => {
       res.end('internal server error')
     }
   });
-  server.once('error', (err) => {
+  server.once('error', (err: Error) => {
     console.error(err)
     process.exit(1)
   })
 
   const io = new Server(server);
-  io.on("connection", async (socket) => {
+  io.on("connection", async (socket: ReservedOrUserListener<any, any, any>) => {
     console.log("New connection with: ", socket.id);
     // Add this socket connection to the room automatically.
     socket.join(roomId)

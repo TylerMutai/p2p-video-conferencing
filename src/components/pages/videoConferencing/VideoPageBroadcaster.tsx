@@ -4,10 +4,11 @@ import ButtonIcon from "@/components/pages/videoConferencing/ButtonIcon";
 import {MdOutlineCameraswitch} from "react-icons/md";
 import {BsStopFill} from "react-icons/bs";
 import FacingModeTypes from "@/types/facingModes";
+import VideoPageClient from "@/components/pages/videoConferencing/VideoPageClient";
 
 
 interface Props {
-  pc: RTCPeerConnection,
+  pc: RTCPeerConnection | undefined,
 }
 
 function VideoPageBroadcaster({pc}: Props) {
@@ -27,7 +28,9 @@ function VideoPageBroadcaster({pc}: Props) {
       if (videoStream && videoRef.current) {
         // set this video stream to our video stream object.
         videoRef.current.srcObject = videoStream
-        videoStream.getTracks().forEach(track => pc.addTrack(track, videoStream));
+        if (pc) {
+          videoStream.getTracks().forEach(track => pc.addTrack(track, videoStream));
+        }
         setIsStreamStarted(true);
       }
     } catch (e: any) {
@@ -82,6 +85,8 @@ function VideoPageBroadcaster({pc}: Props) {
         <ButtonIcon icon={MdOutlineCameraswitch} onClick={handleCameraSwitch}/>
         <ButtonIcon icon={BsStopFill} onClick={() => handleStopStream()}/>
       </Flex>
+
+      <VideoPageClient pc={pc}/>
 
       {!isStreamStarted &&
         <Flex position={"absolute"} w={"100%"}

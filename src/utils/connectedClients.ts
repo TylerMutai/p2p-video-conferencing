@@ -7,8 +7,9 @@ const getConnectedClients = async () => {
   let connectedClients = new Map();
   try {
     const fileContents = await fs.readFile(filename)
-    const clients = JSON.parse(fileContents.toString() ?? "{}")
-    connectedClients = new Map(clients)
+    const data = fileContents.toString() || "{}"
+    const clients = JSON.parse(data)
+    connectedClients = new Map(Object.entries(clients))
   } catch (e) {
     console.log(e);
   }
@@ -16,18 +17,19 @@ const getConnectedClients = async () => {
   return connectedClients
 }
 
-const addConnectedClient = async (client, iceCandidate) => {
+const addConnectedClient = async (client: string, iceCandidate: RTCIceCandidateInit) => {
   const connectedClients = await getConnectedClients();
   try {
     connectedClients.set(client, iceCandidate);
     const jsonData = JSON.stringify(connectedClients.entries());
+    console.log(jsonData)
     await fs.writeFile(filename, jsonData)
   } catch (e) {
     console.log(e)
   }
 }
 
-const deleteConnectedClient = async (client) => {
+const deleteConnectedClient = async (client: string) => {
   const connectedClients = await getConnectedClients();
   try {
     connectedClients.delete(client);

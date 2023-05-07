@@ -12,8 +12,6 @@
     "@chakra-ui/react": "^2.6.0",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "@peertube/p2p-media-loader-core": "^1.0.14",
-    "@peertube/p2p-media-loader-hlsjs": "^1.0.14",
     "@types/node": "18.16.1",
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.1",
@@ -29,6 +27,7 @@
     "sass": "^1.62.1",
     "socket.io": "^4.6.1",
     "socket.io-client": "^4.6.1",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "werift": "^0.18.2"
   }
 }

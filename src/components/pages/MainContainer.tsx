@@ -5,7 +5,6 @@ import AvailableClients from "@/components/pages/availableClients/AvailableClien
 import {io, Socket} from "socket.io-client";
 import {DefaultEventsMap} from "@socket.io/component-emitter";
 import VideoPageBroadcaster from "@/components/pages/videoConferencing/VideoPageBroadcaster";
-import VideoPageClient from "@/components/pages/videoConferencing/VideoPageClient";
 
 const config = {
   iceServers: [
@@ -22,7 +21,11 @@ function MainContainer() {
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap>>(io())
   const currentIceCandidate = useRef<RTCIceCandidate>()
   const [selectedCandidate, setSelectedCandidate] = useState<RTCIceCandidate>()
-  const pc = useRef<RTCPeerConnection>(new RTCPeerConnection(config))
+  const pc = useRef<RTCPeerConnection>()
+
+  useEffect(() => {
+    pc.current = new RTCPeerConnection(config);
+  }, [])
 
   useEffect(() => {
     if (selectedCandidate) {
@@ -47,16 +50,20 @@ function MainContainer() {
 
         socket.current.on('offer', async (data) => {
           if (socket.current.id === data.socketId) {
-            await pc.current.setRemoteDescription(new RTCSessionDescription(data.offer));
-            const answer = await pc.current.createAnswer();
-            await pc.current.setLocalDescription(answer);
-            socket.current.emit('answer', {socketId: socket.current.id, answer});
+            if (pc.current) {
+              await pc.current.setRemoteDescription(new RTCSessionDescription(data.offer));
+              const answer = await pc.current.createAnswer();
+              await pc.current.setLocalDescription(answer);
+              socket.current.emit('answer', {socketId: socket.current.id, answer});
+            }
           }
         });
 
         socket.current.on('answer', async (data) => {
           if (socket.current.id === data.socketId) {
-            await pc.current.setRemoteDescription(new RTCSessionDescription(data.answer));
+            if (pc.current) {
+              await pc.current.setRemoteDescription(new RTCSessionDescription(data.answer));
+            }
           }
         });
       }
@@ -78,7 +85,6 @@ function MainContainer() {
                textColor={"black"}
                bg={"black"} w={"100%"} h={"100%"}>
             <VideoPageBroadcaster pc={pc.current}/>
-            <VideoPageClient pc={pc.current}/>
           </Box>
         </GridItem>
       </SimpleGrid>

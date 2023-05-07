@@ -1,6 +1,7 @@
 import {NextApiRequest, NextApiResponse} from "next";
 
 const connectedClientsHelper = require("../../utils/connectedClients.ts")
+const {RTCIceCandidate} = require("werift")
 
 interface RequestData {
   // Blank for now.
@@ -12,12 +13,13 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     // Return list of clients who currently have a connection.
-    let connectedClients = new Set<string>;
     let message = ""
     let statusCode = 500;
     let results: Array<string> = []
     try {
+      await connectedClientsHelper.addConnectedClient("testing1-2", new RTCIceCandidate())
       results = await connectedClientsHelper.getConnectedClients();
+      statusCode = 200;
     } catch (e) {
       message = (e as any).message
     }
