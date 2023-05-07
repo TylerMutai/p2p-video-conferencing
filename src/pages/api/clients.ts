@@ -1,7 +1,8 @@
 import {NextApiRequest, NextApiResponse} from "next";
 
 const connectedClientsHelper = require("../../utils/connectedClients.ts")
-const {RTCIceCandidate} = require("werift")
+
+// const {RTCIceCandidate} = require("werift")
 
 interface RequestData {
   // Blank for now.
@@ -17,8 +18,7 @@ export default async function handler(
     let statusCode = 500;
     let results: Array<string> = []
     try {
-      await connectedClientsHelper.addConnectedClient("testing1-2", new RTCIceCandidate())
-      results = await connectedClientsHelper.getConnectedClients();
+      results = await connectedClientsHelper.getConnectedClientsJsonString();
       statusCode = 200;
     } catch (e) {
       message = (e as any).message

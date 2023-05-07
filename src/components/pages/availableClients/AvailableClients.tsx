@@ -1,11 +1,12 @@
-import React, {SetStateAction, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Flex, Heading, Spinner, Text} from "@chakra-ui/react";
 
 interface Props {
-  handleCandidateSelect: React.Dispatch<SetStateAction<RTCIceCandidate | undefined>>
+  handleCandidateSelect: (candidate: RTCIceCandidate, candidateString: string) => void,
+  selectedCandidate?: string
 }
 
-function AvailableClients({handleCandidateSelect}: Props) {
+function AvailableClients({handleCandidateSelect, selectedCandidate}: Props) {
   const [loading, setLoading] = useState(false)
   const [clients, setClients] = useState(new Map<string, RTCIceCandidate>);
 
@@ -16,8 +17,10 @@ function AvailableClients({handleCandidateSelect}: Props) {
       const json = await res.json();
       if (json) {
         const map = new Map<string, RTCIceCandidate>();
-        for (const k of Object.keys(json.results)) {
-          map.set(k, json.results[k])
+        for (const v of JSON.parse(json.results).value) {
+          const key = v[0];
+          const value = new RTCIceCandidate(v[1])
+          map.set(key, value)
         }
         setClients(map)
       }
@@ -43,10 +46,11 @@ function AvailableClients({handleCandidateSelect}: Props) {
             <Flex key={clientKey} justifyContent={"center"}
                   p={"1rem"}
                   onClick={() => {
-                    handleCandidateSelect(clients.get(clientKey))
+                    handleCandidateSelect(clients.get(clientKey)!, clientKey)
                   }}
                   borderRadius={"10px"}
                   cursor={"pointer"}
+                  bg={selectedCandidate === clientKey ? "lightblue" : undefined}
                   _hover={{backgroundColor: "gray"}}
                   alignItems={"center"} border={"solid 1px white"}>
               <Text fontWeight={"bold"}>{clientKey}</Text>

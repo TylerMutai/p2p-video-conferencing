@@ -18,9 +18,10 @@ const config = {
 const inter = Inter({subsets: ['latin']})
 
 function MainContainer() {
-  const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap>>(io())
+  const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap>>()
   const currentIceCandidate = useRef<RTCIceCandidate>()
   const [selectedCandidate, setSelectedCandidate] = useState<RTCIceCandidate>()
+  const [selectedCandidateString, setSelectedCandidateString] = useState<string>()
   const pc = useRef<RTCPeerConnection>()
 
   useEffect(() => {
@@ -28,7 +29,7 @@ function MainContainer() {
   }, [])
 
   useEffect(() => {
-    if (selectedCandidate) {
+    if (selectedCandidateString) {
       if (currentIceCandidate.current?.candidate !== selectedCandidate?.candidate) {
         // close previous connection if candidate has been switched.
         try {
@@ -44,23 +45,23 @@ function MainContainer() {
 
         pc.current.onicecandidate = (event) => {
           if (event.candidate) {
-            socket.current.emit('icecandidate', event.candidate);
+            socket.current?.emit('icecandidate', event.candidate);
           }
         };
 
         socket.current.on('offer', async (data) => {
-          if (socket.current.id === data.socketId) {
+          if (socket.current?.id === data.socketId) {
             if (pc.current) {
               await pc.current.setRemoteDescription(new RTCSessionDescription(data.offer));
               const answer = await pc.current.createAnswer();
               await pc.current.setLocalDescription(answer);
-              socket.current.emit('answer', {socketId: socket.current.id, answer});
+              socket.current?.emit('answer', {socketId: socket.current?.id, answer});
             }
           }
         });
 
         socket.current.on('answer', async (data) => {
-          if (socket.current.id === data.socketId) {
+          if (socket.current?.id === data.socketId) {
             if (pc.current) {
               await pc.current.setRemoteDescription(new RTCSessionDescription(data.answer));
             }
@@ -68,7 +69,7 @@ function MainContainer() {
         });
       }
     }
-  }, [selectedCandidate])
+  }, [selectedCandidateString])
 
   return (
     <Flex className={inter.className}
@@ -78,7 +79,12 @@ function MainContainer() {
           bg={"black"} w={"100vw"} h={"100vh"}>
       <SimpleGrid columns={{base: 1, md: 2}}>
         <GridItem>
-          <AvailableClients handleCandidateSelect={setSelectedCandidate}/>
+          <AvailableClients
+            selectedCandidate={selectedCandidateString}
+            handleCandidateSelect={(candidate, candidateString) => {
+              setSelectedCandidate(candidate)
+              setSelectedCandidateString(candidateString)
+            }}/>
         </GridItem>
         <GridItem>
           <Box position={"relative"}
