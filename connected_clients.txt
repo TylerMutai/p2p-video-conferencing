@@ -1,1 +1,1 @@
-{"dataType":"Map","value":[["testing1-3",{"candidate":"string","sdpMid":"string","sdpMLineIndex":"number"}]]}
+{"dataType":"Map","value":[]}

@@ -1,10 +1,8 @@
-import {IncomingMessage, ServerResponse} from "http";
-import {ReservedOrUserListener} from "socket.io/dist/typed-events";
-
-const {createServer} = require('http')
-const {Server} = require("socket.io")
+const {createServer, IncomingMessage, ServerResponse} = require('http')
+const {Server, ReservedOrUserListener} = require("socket.io")
 const next = require('next')
 const connectedClientsHelper = require("./utils/connectedClients.ts")
+const roomId = "peer-to-peer"
 
 
 const env = process.env.NODE_ENV || "development"
@@ -15,7 +13,7 @@ const app = next({dev: env === "development", hostname: serverHostName, port: se
 const handle = app.getRequestHandler()
 
 app.prepare().then(async () => {
-  const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+  const server = createServer(async (req: typeof IncomingMessage, res: typeof ServerResponse) => {
     try {
       await handle(req, res)
     } catch (err) {
@@ -30,22 +28,25 @@ app.prepare().then(async () => {
   })
 
   const io = new Server(server);
-  io.on("connection", async (socket: ReservedOrUserListener<any, any, any>) => {
+  io.on("connection", async (socket: typeof ReservedOrUserListener) => {
     console.log("New connection with: ", socket.id);
     // Add this socket connection to the room automatically.
     socket.join(roomId)
 
     socket.on('offer', (data: { socketId: string; offer: RTCSessionDescriptionInit }) => {
       // Emit the offer. Client will handle checking whether this offer is for it's selected ICECandidate
+      console.log(`Connection id: ${socket.id} has made an offer`)
       socket.to(roomId).emit('offer', data);
     });
 
     socket.on('answer', (data: { socketId: string; answer: RTCSessionDescriptionInit }) => {
       // Emit the answer. Client will handle checking whether this offer is for it's selected ICECandidate
+      console.log(`Connection id: ${socket.id} has made an answer`)
       socket.to(roomId).emit('answer', data);
     });
 
     socket.on('icecandidate', async (candidate: RTCIceCandidateInit) => {
+      console.log(`Connection id: ${socket.id} has is has an ICECandidate`)
       await connectedClientsHelper.addConnectedClient(socket.id, candidate)
       // socket.to(roomId).emit('icecandidate', data.candidate);
     });

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Flex, Heading, Spinner, Text} from "@chakra-ui/react";
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
 function AvailableClients({handleCandidateSelect, selectedCandidate}: Props) {
   const [loading, setLoading] = useState(false)
   const [clients, setClients] = useState(new Map<string, RTCIceCandidate>);
+  const interval = useRef<NodeJS.Timer>()
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -26,8 +27,13 @@ function AvailableClients({handleCandidateSelect, selectedCandidate}: Props) {
       }
       setLoading(false)
     }
-
-    fetchClients().then()
+    interval.current = setInterval(() => {
+      fetchClients().then();
+    }, 5000)
+    fetchClients().then();
+    return () => {
+      clearInterval(interval.current)
+    }
   }, [])
   const clientKeysArr = Array.from(clients.keys());
   return (

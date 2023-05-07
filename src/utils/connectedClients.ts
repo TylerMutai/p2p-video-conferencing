@@ -29,7 +29,7 @@ const getConnectedClients = async () => {
   let connectedClients = new Map();
   try {
     const fileContents = await fs.readFile(filename)
-    const data = fileContents.toString() || "{}"
+    const data = fileContents.toString() || JSON.stringify(new Map(), replacer)
     const clients = JSON.parse(data, reviver)
     connectedClients = new Map(clients)
   } catch (e) {

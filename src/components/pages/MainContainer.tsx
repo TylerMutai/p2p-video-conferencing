@@ -5,6 +5,7 @@ import AvailableClients from "@/components/pages/availableClients/AvailableClien
 import {io, Socket} from "socket.io-client";
 import {DefaultEventsMap} from "@socket.io/component-emitter";
 import VideoPageBroadcaster from "@/components/pages/videoConferencing/VideoPageBroadcaster";
+import VideoPageClient from "@/components/pages/videoConferencing/VideoPageClient";
 
 const config = {
   iceServers: [
@@ -19,57 +20,63 @@ const inter = Inter({subsets: ['latin']})
 
 function MainContainer() {
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap>>()
-  const currentIceCandidate = useRef<RTCIceCandidate>()
   const [selectedCandidate, setSelectedCandidate] = useState<RTCIceCandidate>()
   const [selectedCandidateString, setSelectedCandidateString] = useState<string>()
   const pc = useRef<RTCPeerConnection>()
 
   useEffect(() => {
-    pc.current = new RTCPeerConnection(config);
-  }, [])
-
-  useEffect(() => {
-    if (selectedCandidateString) {
-      if (currentIceCandidate.current?.candidate !== selectedCandidate?.candidate) {
-        // close previous connection if candidate has been switched.
-        try {
-          socket.current?.disconnect();
-          pc?.current?.close();
-        } catch (e) {
-          console.log(e)
-        }
-        pc.current = new RTCPeerConnection(config)
+    const _init = async () => {
+      if (!pc.current) {
+        pc.current = new RTCPeerConnection(config);
+      }
+      if (!socket.current) {
         socket.current = io();
+      }
 
+      if (selectedCandidate) {
         pc.current.addIceCandidate(new RTCIceCandidate(selectedCandidate)).then()
+      }
 
-        pc.current.onicecandidate = (event) => {
-          if (event.candidate) {
-            socket.current?.emit('icecandidate', event.candidate);
-          }
-        };
+      pc.current.onicecandidate = (event) => {
+        console.log("candidate event", event.candidate)
+        if (event.candidate) {
+          socket.current?.emit('icecandidate', event.candidate);
+        }
+      };
 
-        socket.current.on('offer', async (data) => {
-          if (socket.current?.id === data.socketId) {
-            if (pc.current) {
-              await pc.current.setRemoteDescription(new RTCSessionDescription(data.offer));
-              const answer = await pc.current.createAnswer();
-              await pc.current.setLocalDescription(answer);
-              socket.current?.emit('answer', {socketId: socket.current?.id, answer});
-            }
+      socket.current!.on('offer', async (data) => {
+        if (socket.current?.id === data.socketId) {
+          if (pc.current) {
+            await pc.current.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await pc.current.createAnswer();
+            await pc.current.setLocalDescription(answer);
+            socket.current?.emit('answer', {socketId: socket.current?.id, answer});
           }
-        });
+        }
+      });
 
-        socket.current.on('answer', async (data) => {
-          if (socket.current?.id === data.socketId) {
-            if (pc.current) {
-              await pc.current.setRemoteDescription(new RTCSessionDescription(data.answer));
-            }
+      socket.current!.on('answer', async (data) => {
+        if (socket.current?.id === data.socketId) {
+          if (pc.current) {
+            await pc.current.setRemoteDescription(new RTCSessionDescription(data.answer));
           }
-        });
+        }
+      });
+    }
+
+    _init().then()
+
+    return () => {
+      try {
+        socket.current?.disconnect();
+        pc?.current?.close();
+        socket.current = undefined;
+        pc.current = undefined;
+      } catch (e) {
+        console.log(e)
       }
     }
-  }, [selectedCandidateString])
+  }, [selectedCandidate, selectedCandidateString])
 
   return (
     <Flex className={inter.className}
@@ -77,7 +84,7 @@ function MainContainer() {
           textColor={"white"}
           alignItems={"center"}
           bg={"black"} w={"100vw"} h={"100vh"}>
-      <SimpleGrid columns={{base: 1, md: 2}}>
+      <SimpleGrid columns={{base: 1, md: 2}} w={"100%"}>
         <GridItem>
           <AvailableClients
             selectedCandidate={selectedCandidateString}
@@ -91,6 +98,7 @@ function MainContainer() {
                textColor={"black"}
                bg={"black"} w={"100%"} h={"100%"}>
             <VideoPageBroadcaster pc={pc.current}/>
+            <VideoPageClient pc={pc.current}/>
           </Box>
         </GridItem>
       </SimpleGrid>
