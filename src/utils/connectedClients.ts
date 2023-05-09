@@ -3,10 +3,10 @@ const fs = require("fs/promises")
 const filename = "connected_clients.txt"
 
 function replacer(key: string, value: any) {
-  if (value instanceof Map) {
+  if (value instanceof Set) {
     return {
-      dataType: 'Map',
-      value: Array.from(value.entries()), // or with spread: value: [...value]
+      dataType: 'Set',
+      value: Array.from(value.values()),
     };
   } else {
     return value;
@@ -15,8 +15,8 @@ function replacer(key: string, value: any) {
 
 function reviver(key: string, value: any) {
   if (typeof value === 'object' && value !== null) {
-    if (value.dataType === 'Map') {
-      return new Map(value.value);
+    if (value.dataType === 'Set') {
+      return new Set(value.value);
     }
   }
   return value;
@@ -26,12 +26,12 @@ const getConnectedClientsJsonString = async () => {
   return JSON.stringify(await getConnectedClients(), replacer)
 }
 const getConnectedClients = async () => {
-  let connectedClients = new Map();
+  let connectedClients = new Set();
   try {
     const fileContents = await fs.readFile(filename)
-    const data = fileContents.toString() || JSON.stringify(new Map(), replacer)
+    const data = fileContents.toString() || JSON.stringify(new Set(), replacer)
     const clients = JSON.parse(data, reviver)
-    connectedClients = new Map(clients)
+    connectedClients = new Set(clients)
   } catch (e) {
     console.log(e);
   }
@@ -39,10 +39,10 @@ const getConnectedClients = async () => {
   return connectedClients
 }
 
-const addConnectedClient = async (client: string, iceCandidate: RTCIceCandidateInit) => {
+const addConnectedClient = async (client: string) => {
   const connectedClients = await getConnectedClients();
   try {
-    connectedClients.set(client, iceCandidate);
+    connectedClients.add(client);
     const jsonData = JSON.stringify(connectedClients, replacer);
     await fs.writeFile(filename, jsonData)
   } catch (e) {

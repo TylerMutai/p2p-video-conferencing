@@ -2,7 +2,6 @@ const {createServer, IncomingMessage, ServerResponse} = require('http')
 const {Server, ReservedOrUserListener} = require("socket.io")
 const next = require('next')
 const connectedClientsHelper = require("./utils/connectedClients.ts")
-const roomId = "peer-to-peer"
 
 
 const env = process.env.NODE_ENV || "development"
@@ -30,25 +29,30 @@ app.prepare().then(async () => {
   const io = new Server(server);
   io.on("connection", async (socket: typeof ReservedOrUserListener) => {
     console.log("New connection with: ", socket.id);
-    // Add this socket connection to the room automatically.
-    socket.join(roomId)
 
+    // Add this socket connection to the list of available clients. This list is rendered
+    // on the frontend through the endpoint: '/api/clients'
+    await connectedClientsHelper.addConnectedClient(socket.id)
+
+    // When we receive an offer, we re-broadcast this to all available clients.
+    // The client is responsible for handling its specific candidates by checking against
+    // the [socketId] field.
     socket.on('offer', (data: { socketId: string; offer: RTCSessionDescriptionInit }) => {
       // Emit the offer. Client will handle checking whether this offer is for it's selected ICECandidate
       console.log(`Connection id: ${socket.id} has made an offer`)
-      socket.to(roomId).emit('offer', data);
+      socket.emit('offer', data);
     });
 
+    // Same here. The client checks against the [socketId] field
     socket.on('answer', (data: { socketId: string; answer: RTCSessionDescriptionInit }) => {
       // Emit the answer. Client will handle checking whether this offer is for it's selected ICECandidate
       console.log(`Connection id: ${socket.id} has made an answer`)
-      socket.to(roomId).emit('answer', data);
+      socket.emit('answer', data);
     });
 
-    socket.on('icecandidate', async (candidate: RTCIceCandidateInit) => {
+    socket.on('icecandidate', async (data: { socketId: string; candidate: RTCIceCandidateInit }) => {
       console.log(`Connection id: ${socket.id} has is has an ICECandidate`)
-      await connectedClientsHelper.addConnectedClient(socket.id, candidate)
-      // socket.to(roomId).emit('icecandidate', data.candidate);
+      socket.emit('icecandidate', data);
     });
 
     // register a listener on the socket to check for disconnection.

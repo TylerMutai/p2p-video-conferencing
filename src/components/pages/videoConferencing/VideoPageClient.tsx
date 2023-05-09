@@ -33,10 +33,11 @@ function VideoPageClient({pc}: Props) {
         transform={"scaleX(-1)" /*For purposes of ensuring the incoming livestream behaves like a mirror (flipped)*/}
         width={"100%"} height={"100%"} objectFit={"contain"} ref={videoRef} autoPlay={true}>
       </chakra.video>
-      <Text
-        top={"5px"}
-        left={"5px"}
-        position={"absolute"}>Client video will appear here</Text>
+      {!videoRef?.current?.srcObject
+        && <Text
+          top={"5px"}
+          left={"5px"}
+          position={"absolute"}>Client video will appear here</Text>}
     </Box>
   );
 }

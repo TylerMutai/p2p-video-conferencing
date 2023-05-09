@@ -28,13 +28,6 @@ function VideoPageBroadcaster({pc}: Props) {
         // set this video stream to our video stream object.
         videoRef.current.srcObject = videoStream
 
-        // Notify other clients that you are available to stream.
-        if (pc) {
-          // initiate offer connection
-          const offer = await pc.createOffer()
-          await pc.setLocalDescription(offer)
-        }
-
         if (pc && pc.signalingState === "stable") {
           videoStream.getTracks().forEach(track => pc.addTrack(track, videoStream));
         }

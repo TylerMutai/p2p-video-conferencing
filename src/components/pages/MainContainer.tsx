@@ -20,63 +20,72 @@ const inter = Inter({subsets: ['latin']})
 
 function MainContainer() {
   const socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap>>()
-  const [selectedCandidate, setSelectedCandidate] = useState<RTCIceCandidate>()
   const [selectedCandidateString, setSelectedCandidateString] = useState<string>()
+  const selectedCandidateRef = useRef("");
   const pc = useRef<RTCPeerConnection>()
 
   useEffect(() => {
-    const _init = async () => {
-      if (!pc.current) {
-        pc.current = new RTCPeerConnection(config);
+    socket.current = io();
+    pc.current = new RTCPeerConnection(config)
+
+    pc.current.onicecandidate = (event) => {
+      console.log("candidate event", event.candidate)
+      if (event.candidate) {
+        socket.current?.emit('icecandidate', event.candidate);
       }
-      if (!socket.current) {
-        socket.current = io();
+    };
+
+    socket.current!.on('offer', async (data) => {
+      console.log(`We have received an offer from ${data.socketId}. Current id: ${socket.current?.id}`);
+
+      if (selectedCandidateRef.current === data.socketId) {
+         await pc.current?.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await pc.current?.createAnswer();
+        await pc.current?.setLocalDescription(answer);
+        socket.current?.emit('answer', {socketId: socket.current?.id, answer});
       }
+    });
 
-      if (selectedCandidate) {
-        pc.current.addIceCandidate(new RTCIceCandidate(selectedCandidate)).then()
+    socket.current!.on('answer', async (data) => {
+      if (selectedCandidateRef.current === data.socketId) {
+        if (pc.current) {
+          await pc.current.setRemoteDescription(new RTCSessionDescription(data.answer));
+        }
       }
+    });
 
-      pc.current.onicecandidate = (event) => {
-        console.log("candidate event", event.candidate)
-        if (event.candidate) {
-          socket.current?.emit('icecandidate', event.candidate);
-        }
-      };
-
-      socket.current!.on('offer', async (data) => {
-        if (socket.current?.id === data.socketId) {
-          if (pc.current) {
-            await pc.current.setRemoteDescription(new RTCSessionDescription(data.offer));
-            const answer = await pc.current.createAnswer();
-            await pc.current.setLocalDescription(answer);
-            socket.current?.emit('answer', {socketId: socket.current?.id, answer});
-          }
-        }
-      });
-
-      socket.current!.on('answer', async (data) => {
-        if (socket.current?.id === data.socketId) {
-          if (pc.current) {
-            await pc.current.setRemoteDescription(new RTCSessionDescription(data.answer));
-          }
-        }
-      });
-    }
-
-    _init().then()
+    socket.current!.on('icecandidate', async (data) => {
+      if (selectedCandidateRef.current === socket.current?.id) {
+        await pc.current?.addIceCandidate(new RTCIceCandidate(data.candidate));
+      }
+    });
 
     return () => {
       try {
         socket.current?.disconnect();
-        pc?.current?.close();
-        socket.current = undefined;
-        pc.current = undefined;
+        pc.current?.close();
       } catch (e) {
         console.log(e)
       }
     }
-  }, [selectedCandidate, selectedCandidateString])
+  }, [])
+
+  const handleClientSelect = React.useCallback(async (candidateString: string) => {
+    // initiate offer connection
+    if (candidateString) {
+      if (pc.current) {
+        const offer = await pc.current!.createOffer()
+        await pc.current!.setLocalDescription(offer)
+        setSelectedCandidateString(candidateString)
+        selectedCandidateRef.current = candidateString
+        console.log("handleClientSelect: ", socket.current?.id)
+        socket.current?.emit("offer", {
+          socketId: candidateString,
+          offer
+        })
+      }
+    }
+  }, [pc, socket])
 
   return (
     <Flex className={inter.className}
@@ -88,9 +97,8 @@ function MainContainer() {
         <GridItem>
           <AvailableClients
             selectedCandidate={selectedCandidateString}
-            handleCandidateSelect={(candidate, candidateString) => {
-              setSelectedCandidate(candidate)
-              setSelectedCandidateString(candidateString)
+            handleCandidateSelect={(candidateString) => {
+              handleClientSelect(candidateString).then()
             }}/>
         </GridItem>
         <GridItem>
