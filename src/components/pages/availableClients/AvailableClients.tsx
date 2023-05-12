@@ -3,10 +3,11 @@ import {Flex, Heading, Spinner, Text} from "@chakra-ui/react";
 
 interface Props {
   handleCandidateSelect: (candidateString: string) => void,
-  selectedCandidate?: string
+  selectedCandidate?: string,
+  currentSocketId: string
 }
 
-function AvailableClients({handleCandidateSelect, selectedCandidate}: Props) {
+function AvailableClients({handleCandidateSelect, selectedCandidate, currentSocketId}: Props) {
   const [loading, setLoading] = useState(false)
   const [clients, setClients] = useState(new Set<string>);
   const interval = useRef<NodeJS.Timer>()
@@ -19,7 +20,8 @@ function AvailableClients({handleCandidateSelect, selectedCandidate}: Props) {
       if (json) {
         const map = new Set<string>();
         for (const v of JSON.parse(json.results).value) {
-          map.add(v)
+          if (v !== currentSocketId)
+            map.add(v)
         }
         setClients(map)
       }
@@ -32,7 +34,8 @@ function AvailableClients({handleCandidateSelect, selectedCandidate}: Props) {
     return () => {
       clearInterval(interval.current)
     }
-  }, [])
+  }, [currentSocketId])
+
   const clientKeysArr = Array.from(clients.keys());
   return (
     <Flex flexDirection={"column"} alignItems={"center"} justifyContent={"center"}

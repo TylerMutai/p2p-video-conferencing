@@ -40,19 +40,20 @@ app.prepare().then(async () => {
     socket.on('offer', (data: { socketId: string; offer: RTCSessionDescriptionInit }) => {
       // Emit the offer. Client will handle checking whether this offer is for it's selected ICECandidate
       console.log(`Connection id: ${socket.id} has made an offer`)
-      socket.emit('offer', data);
+      console.log(`socketId: ${data.socketId}`)
+      io.emit('offer', data);
     });
 
     // Same here. The client checks against the [socketId] field
     socket.on('answer', (data: { socketId: string; answer: RTCSessionDescriptionInit }) => {
       // Emit the answer. Client will handle checking whether this offer is for it's selected ICECandidate
       console.log(`Connection id: ${socket.id} has made an answer`)
-      socket.emit('answer', data);
+      io.emit('answer', data);
     });
 
     socket.on('icecandidate', async (data: { socketId: string; candidate: RTCIceCandidateInit }) => {
       console.log(`Connection id: ${socket.id} has is has an ICECandidate`)
-      socket.emit('icecandidate', data);
+      io.emit('icecandidate', data);
     });
 
     // register a listener on the socket to check for disconnection.
@@ -64,5 +65,9 @@ app.prepare().then(async () => {
 
   server.listen(serverPort, () => {
     console.log(`> Ready on http://${serverHostName}:${serverPort}`)
+  })
+
+  server.once("close", async () => {
+    await connectedClientsHelper.clearConnectedClients()
   })
 })

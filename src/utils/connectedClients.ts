@@ -1,6 +1,7 @@
 const fs = require("fs/promises")
 
 const filename = "connected_clients.txt"
+let isWritingFile = false;
 
 function replacer(key: string, value: any) {
   if (value instanceof Set) {
@@ -39,15 +40,30 @@ const getConnectedClients = async () => {
   return connectedClients
 }
 
+const waitingFunc = async (timeout = 1000) => {
+  return new Promise((resolve => {
+    setTimeout(() => {
+      resolve(true);
+    }, timeout)
+  }))
+}
+
 const addConnectedClient = async (client: string) => {
+  while (isWritingFile) {
+    // wait until file has stopped being written (so as not to override values)
+    console.log("Waiting for file I/O to complete")
+    await waitingFunc();
+  }
   const connectedClients = await getConnectedClients();
   try {
     connectedClients.add(client);
+    isWritingFile = true;
     const jsonData = JSON.stringify(connectedClients, replacer);
     await fs.writeFile(filename, jsonData)
   } catch (e) {
     console.log(e)
   }
+  isWritingFile = false;
 }
 
 const deleteConnectedClient = async (client: string) => {
@@ -61,6 +77,16 @@ const deleteConnectedClient = async (client: string) => {
   }
 }
 
+const clearConnectedClients = async () => {
+  const emptySet = new Set<string>();
+  const jsonData = JSON.stringify(emptySet, replacer);
+  try {
+    await fs.writeFile(filename, jsonData)
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 module.exports = {
-  getConnectedClients, addConnectedClient, deleteConnectedClient, getConnectedClientsJsonString
+  getConnectedClients, addConnectedClient, deleteConnectedClient, getConnectedClientsJsonString, clearConnectedClients
 }

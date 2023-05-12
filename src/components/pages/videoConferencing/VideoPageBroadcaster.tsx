@@ -28,7 +28,7 @@ function VideoPageBroadcaster({pc}: Props) {
         // set this video stream to our video stream object.
         videoRef.current.srcObject = videoStream
 
-        if (pc && pc.signalingState === "stable") {
+        if (pc) {
           videoStream.getTracks().forEach(track => pc.addTrack(track, videoStream));
         }
         setIsStreamStarted(true);
